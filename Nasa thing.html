@@ -1,0 +1,246 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Seeing & Floating — Cupola + NBL Interactive</title>
+  <meta name="description" content="Interactive learning tool: Cupola (sight) and NBL (weightlessness).">
+  <style>
+    /* --- Orange / Purple theme --- */
+    :root{
+      --bg1: #2a002a; /* deep purple */
+      --bg2: #ff6600; /* orangish gradient */
+      --panel: rgba(50,10,40,0.88);
+      --accent1: #ffb366; /* light orange */
+      --accent2: #cc33ff; /* bright purple */
+      --muted: #ffd9b3;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%;margin:0;font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial; background:linear-gradient(180deg,var(--bg1) 0%, var(--bg2) 60%); color:var(--muted)}
+    .wrap{max-width:1100px;margin:28px auto;padding:20px}
+    header{display:flex;gap:20px;align-items:center;justify-content:space-between}
+    h1{margin:0;font-size:26px;color:var(--accent1);letter-spacing:-0.2px}
+    p.lead{margin:6px 0 0;color:#ffd9b3}
+    .navbtn{padding:8px 12px;border-radius:8px;border:1px solid rgba(255,255,255,0.06);background:transparent;color:var(--muted);cursor:pointer}
+    .navbtn.active{background:linear-gradient(90deg,var(--accent2),var(--accent1));color:#012;box-shadow:0 6px 20px rgba(204,51,255,0.18)}
+    main{display:grid;grid-template-columns:2fr 1fr;gap:18px;margin-top:18px}
+    .panel{background:var(--panel);border-radius:12px;padding:14px;border:1px solid rgba(255,255,255,0.06);box-shadow:0 10px 30px rgba(20,0,40,0.5)}
+    .viewport{height:420px;border-radius:10px;overflow:hidden;position:relative;background:#000}
+    .panorama{position:absolute;inset:0;background-size:cover;background-repeat:no-repeat;background-position:50% 50%;transition:background-position 120ms linear}
+    .overlay{position:absolute;inset:0;pointer-events:none;background:linear-gradient(180deg, rgba(40,10,40,0.0) 0%, rgba(20,5,20,0.45) 70%)}
+    .hud{position:absolute;left:14px;top:14px;background:rgba(20,0,40,0.65);padding:8px;border-radius:8px;font-size:13px;color:var(--muted);pointer-events:auto}
+    .layers{position:absolute;right:14px;top:14px;display:flex;flex-direction:column;gap:8px;pointer-events:auto}
+    .layer{background:rgba(40,10,60,0.6);padding:6px 8px;border-radius:8px;display:flex;align-items:center;gap:8px;color:var(--muted);font-size:13px}
+    .legend{position:absolute;left:14px;bottom:14px;background:rgba(20,0,40,0.6);padding:10px;border-radius:8px;font-size:13px;color:var(--muted)}
+    .nbl-hero{height:420px;border-radius:10px;overflow:hidden;position:relative;background:linear-gradient(180deg,#330033,#ff6600)}
+    .nbl-hero video, .nbl-hero img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+    .nbl-caption{position:absolute;left:16px;bottom:16px;background:rgba(20,0,40,0.6);padding:10px;border-radius:8px;color:var(--muted);font-size:13px}
+    .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:12px}
+    .card{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,0.03);font-size:14px}
+    .card h3{margin:0;color:var(--accent1);font-size:15px}
+    .controls{margin-top:12px;display:flex;gap:12px;align-items:center}
+    input[type="range"]{width:100%}
+    aside{display:flex;flex-direction:column;gap:12px}
+    .aside-card{padding:12px;border-radius:10px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.03)}
+    footer{text-align:center;margin-top:18px;color:#ffcc99;font-size:13px}
+    @media (max-width:980px){main{grid-template-columns:1fr} .grid3{grid-template-columns:1fr}}
+    .btn{display:inline-block;padding:8px 10px;border-radius:8px;background:linear-gradient(90deg,var(--accent2),var(--accent1));color:#022;cursor:pointer;border:none}
+    .astronautWrap{height:120px;display:flex;align-items:center;justify-content:center}
+    .astronaut{
+      width:64px;height:90px;border-radius:10px;background:linear-gradient(180deg,#ffddcc,#cc33ff);display:flex;align-items:center;justify-content:center;color:#012;font-weight:600;box-shadow:0 8px 20px rgba(80,20,100,0.24);
+      transition:transform 350ms cubic-bezier(.2,.9,.2,1);
+    }
+    .credit{font-size:12px;color:#ffd9b3;margin-top:6px}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div>
+        <h1>Seeing &amp; Floating — Cupola + NBL Interactive</h1>
+        <p class="lead">Explore what astronauts see from the Cupola and how they practice weightlessness in the NBL — and learn how those experiences benefit life on Earth.</p>
+      </div>
+      <div>
+        <button id="btnCup" class="navbtn active">Cupola (Sight)</button>
+        <button id="btnNBL" class="navbtn">NBL (Weightlessness)</button>
+      </div>
+    </header>
+
+    <main>
+      <section class="panel" id="mainPanel">
+        <div id="cupolaSection">
+          <div class="viewport" id="viewport">
+            <div id="panorama" class="panorama" style="background-image:url('ssssss.png');"></div>
+            <div class="overlay"></div>
+            
+            
+            <div class="legend" id="legend">
+              <div style="font-weight:700;color:var(--accent2)">Layer highlights</div>
+              <ul style="margin:6px 0 0;padding-left:18px;color:#ffd9b3;font-size:13px" id="legendList">
+                <li>🔥 Active wildfire monitoring (simulated)</li>
+                <li>💡 City light mapping (toggle Night lights)</li>
+                <li>🌫️ Atmospheric features (cloud bands)</li>
+              </ul>
+            </div>
+          </div>
+          <div style="margin-top:12px;">
+            <video id="cupVid" controls style="width:100%;border-radius:10px;border:1px solid rgba(255,255,255,0.04);background:#000">
+              <source src="cupola.mp4" type="video/mp4">
+              Your browser does not support video.
+            </video>
+            <div class="credit">Video: NASA / ISS crew</div>
+          </div>
+          <div class="grid3">
+            <div class="card">
+              <h3>Why this view matters</h3>
+              <p style="color:#ffd9b3;margin-top:8px;font-size:13px">Astronauts use the Cupola to photograph weather, natural events, and long-term changes on Earth — data critical for research and response.</p>
+            </div>
+            <div class="card">
+              <h3>Earth benefits</h3>
+              <ul style="margin-top:8px;color:#ffd9b3;font-size:13px">
+                <li>Disaster response & damage assessment</li>
+                <li>Climate and environmental monitoring</li>
+                <li>Urban planning from night-light analysis</li>
+              </ul>
+            </div>
+            
+          </div>
+        </div>
+
+        <div id="nblSection" style="display:none">
+          <div class="nbl-hero">
+            <video id="nblVideo" autoplay loop muted playsinline>
+              <source src="nbl.mp4" type="video/mp4">
+            </video>
+            <img src="https://www.nasa.gov/sites/default/files/thumbnails/image/nbl_training_0.jpg" alt="NBL training" style="opacity:0.25">
+            <div class="nbl-caption">
+              <div style="font-weight:700;color:var(--accent2)">Neutral Buoyancy Lab (NBL)</div>
+              <div style="margin-top:6px;color:#ffd9b3;font-size:13px">Astronauts train underwater to simulate weightlessness and practice spacewalks safely.</div>
+            </div>
+          </div>
+
+        
+
+          <div class="grid3">
+            <div class="card">
+              <h3>What the NBL teaches</h3>
+              <p style="color:#ffd9b3;margin-top:8px;font-size:13px">Body control, tool use, and procedures — practiced underwater to mimic many aspects of microgravity.</p>
+            </div>
+            <div class="card">
+              <h3>Earth benefits</h3>
+              <ul style="margin-top:8px;color:#ffd9b3;font-size:13px">
+                <li>Robotics and remote-handling techniques (surgical & industrial)</li>
+                <li>Rehabilitation methods inspired by microgravity movement</li>
+                <li>Underwater exploration methods & tech</li>
+              </ul>
+            </div>
+            <div class="card">
+              <h3>Try this</h3>
+              <p style="margin-top:8px;color:#ffd9b3;font-size:13px">Use the slider — lower gravity values make the astronaut float more freely (visual demo).</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <aside>
+        <div class="aside-card panel">
+          <h3 style="margin:0;color:var(--accent1)">Quick Facts</h3>
+          <ul style="margin-top:8px;color:#ffd9b3;font-size:13px">
+            <li>The Cupola is a 360° observation module on the ISS.</li>
+            <li>The NBL is a large underwater facility at NASA Johnson Space Center.</li>
+            <li>Both help astronauts train and produce on-Earth benefits.</li>
+          </ul>
+        </div>
+
+        <div class="aside-card panel">
+          <h3 style="margin:0;color:var(--accent1)">Lesson Ideas</h3>
+          <ol style="margin-top:8px;color:#ffd9b3;font-size:13px">
+            <li>Map recent disasters and discuss how satellite images help responders.</li>
+            <li>Run a classroom balance activity to explain microgravity sensations.</li>
+            <li>Discuss a problem (e.g., wildfire monitoring) and trace how Cupola imagery helps solutions.</li>
+          </ol>
+        </div>
+
+        <div class="aside-card panel">
+          <h3 style="margin:0;color:var(--accent1)">About this Experience</h3>
+          <p style="color:#ffd9b3;font-size:13px;margin-top:8px">This page simulates two key sensory experiences on the space station — what astronauts see (Cupola) and how they practice floating (NBL). It uses public NASA media and is intended for educational outreach.</p>
+          <div style="margin-top:8px;font-size:12px;color:#ffd9b3">Media credits: NASA public domain images & videos.</div>
+        </div>
+      </aside>
+    </main>
+
+    <footer>
+      <div>© 2025 NASA-Inspired STEM Outreach — Educational Use Only</div>
+    </footer>
+  </div>
+
+  <script>
+    // Interactivity unchanged (panorama, layers, gravity slider, section toggle)
+    const btnCup = document.getElementById('btnCup');
+    const btnNBL = document.getElementById('btnNBL');
+    const cupolaSection = document.getElementById('cupolaSection');
+    const nblSection = document.getElementById('nblSection');
+    const panorama = document.getElementById('panorama');
+
+    btnCup.addEventListener('click', ()=> {
+      btnCup.classList.add('active'); btnNBL.classList.remove('active');
+      cupolaSection.style.display = ''; nblSection.style.display = 'none';
+    });
+    btnNBL.addEventListener('click', ()=> {
+      btnNBL.classList.add('active'); btnCup.classList.remove('active');
+      cupolaSection.style.display = 'none'; nblSection.style.display = '';
+    });
+
+    (function(){
+      const vp = document.getElementById('viewport');
+      let dragging=false, lastX=0, panX=50;
+      function setBg(){ panorama.style.backgroundPosition = panX + '% 50%'; }
+      setBg();
+      vp.addEventListener('mousedown', e=>{ dragging=true; lastX=e.clientX; vp.style.cursor='grabbing' });
+      window.addEventListener('mouseup', ()=>{ dragging=false; vp.style.cursor='grab' });
+      window.addEventListener('mousemove', e=>{ if(!dragging) return; const dx = e.clientX - lastX; lastX=e.clientX; panX = Math.max(0, Math.min(100, panX - dx*0.08)); setBg(); });
+      vp.addEventListener('touchstart', e=>{ dragging=true; lastX=e.touches[0].clientX });
+      window.addEventListener('touchend', ()=>{ dragging=false });
+      window.addEventListener('touchmove', e=>{ if(!dragging) return; const dx = e.touches[0].clientX - lastX; lastX=e.touches[0].clientX; panX = Math.max(0, Math.min(100, panX - dx*0.08)); setBg(); }, {passive:true});
+    })();
+
+    const L_disasters = document.getElementById('L_disasters');
+    const L_nightlights = document.getElementById('L_nightlights');
+    const L_atmos = document.getElementById('L_atmos');
+    const legendList = document.getElementById('legendList');
+
+    function refreshLegend(){
+      const items = [];
+      if(L_disasters.checked) items.push('🔥 Active wildfire monitoring (simulated)');
+      if(L_nightlights.checked) items.push('💡 City light mapping (simulated)');
+      if(L_atmos.checked) items.push('🌫️ Atmospheric features and clouds');
+      if(items.length===0) items.push('No layers enabled — toggle to explore data.');
+      legendList.innerHTML = items.map(i=>'<li>'+i+'</li>').join('');
+    }
+    [L_disasters,L_nightlights,L_atmos].forEach(el => el.addEventListener('change', refreshLegend));
+    refreshLegend();
+
+    const grav = document.getElementById('grav');
+    const gravVal = document.getElementById('gravVal');
+    const astro = document.getElementById('astro');
+    grav.addEventListener('input', ()=>{
+      const v = parseFloat(grav.value);
+      gravVal.textContent = (1 - v).toFixed(2) + ' × float';
+      const translateY = -40 * (1 - v);
+      const scale = 1 + 0.05 * (1 - v);
+      astro.style.transform = 'translateY('+translateY+'px) scale('+scale+')';
+      if(v < 0.3) { astro.style.transition = 'transform 850ms cubic-bezier(.2,.9,.2,1)'; }
+      else { astro.style.transition = 'transform 300ms cubic-bezier(.2,.9,.2,1)'; }
+    });
+
+    document.querySelectorAll('video').forEach(v=>{
+      v.addEventListener('click', ()=> v.paused ? v.play() : v.pause());
+      v.muted = true;
+      v.play().catch(()=>{});
+    });
+
+    btnCup.addEventListener('keyup', (e)=>{ if(e.key==='Enter') btnCup.click(); });
+    btnNBL.addEventListener('keyup', (e)=>{ if(e.key==='Enter') btnNBL.click(); });
+  </script>
+</body>
+</html>
